@@ -592,7 +592,7 @@ Python File Objects
 The .read() method reads all of the text in the file and returns it as a
 string value
 
-The .readlines() method returns an iterable of lines from the file.
+The .readlines() method returns an iterable of lines (as str) from the file.
 """)
 
 print(f"\nprint the destination file directly and then it's name:")
@@ -606,18 +606,23 @@ with open(destination,encoding='utf8') as f:
 #    print(f"destination is {f}")
     print()
     if len(f.readlines()) > 0:
-        print(f"yes, length is {len(f.readlines()) }")
+        print(f"""yes, length of f.readlines() is {len(f.readlines())} this is
+              because the current cursor is at the end of the file now.
+              in the if block, that f.readlines() is greater then 0, so it
+              enters and prints yes,
+              then you run realines() again, I think you get the idea.""")
         for c in f.readlines():
             print(f"content of destintion is {c}")
     else:
         print(f"length of destination is len(f.readlines())")
 
-print(f"\nread the file first and then check the type and length.")
+print(f"\n read the file first and then check the type and length.")
 with open(destination,"r",encoding='UTF-8') as f:
     text = f.readlines()
     print(f"type of text is {type(text)}")
-    print(f"length of text is {len(text)}")          # why this works？
-    print(f"length of f.readlines() is {len(f.readlines())}") # why this doesn't work?
+    print(f"length of text is {len(text)}")          
+    f.seek(0)
+    print(f"length of f.readlines() is {len(f.readlines())}")
     text2 = f.read()
     print(f"type of text2 is {type(text2)}")
     print(f"test2 is {text2}")
@@ -765,7 +770,14 @@ sysout(temps_int)
 print(f"""{seg}
 The csv Module
 1. Writing CSV Files With csv.writer
-2. Reading CSV Files With csv.reader
+step 1 - create path object of the csv you want to create
+step 2 - open/ with open that path object, save it as a file object,
+         mode is default to "r", so you need to specify it as "w",
+         encoding = "utf-8"
+         newline = ''
+step 3 - create csv.writer object by passing the file object created in step 2
+Step 4 - using csv.writer object's writerow() or writerows() to write into the
+         file object line by line, or use write() to write byte by byte.
 {seg}
 """)
 
@@ -773,6 +785,8 @@ import csv
 
 daily_temps = [[68, 65, 68, 70, 74, 72],[67, 67, 70, 72, 72, 70],[68, 70, 74, 76, 74, 73],]
 
+
+print("daily_temps_csv=================================")
 # create a csv file that you want to write data in.
 daily_temps_csv = csv_12/"daily_temps.csv"
 
@@ -791,11 +805,37 @@ for row in daily_temps:
     print("row appended.")
 
 file.close()
+print(r"""
+Notice in daily_temps.csv, there is an extra new line bewteen each record.
+this is because I didn't specify newline, and it defaults to None.
+
+    call help(open) you will see the following message
+    newline controls how universal newlines works (it only applies to text
+    mode). It can be None, '', '\n', '\r', and '\r\n'.  It works as
+    follows:
+    
+    * On input, if newline is None, universal newlines mode is
+      enabled. Lines in the input can end in '\n', '\r', or '\r\n', and
+      these are translated into '\n' before being returned to the
+      caller. If it is '', universal newline mode is enabled, but line
+      endings are returned to the caller untranslated. If it has any of
+      the other legal values, input lines are only terminated by the given
+      string, and the line ending is returned to the caller untranslated.
+    
+    * On output, if newline is None, any '\n' characters written are
+      translated to the system default line separator, os.linesep. If
+      newline is '' or '\n', no translation takes place. If newline is any
+      of the other legal values, any '\n' characters written are translated
+      to the given string.
+""")
 
 
+print("daily_temps_csv2================================")
 # use with statement:
 daily_temps_csv2 = csv_12/"daily_temps2.csv"
-with open(daily_temps_csv2,"w",encoding = "utf8") as f:
+
+# after adding newline='', extra line feed is gone in the csv file.
+with open(daily_temps_csv2,"w",encoding = "utf8",newline='') as f:
     csv_writer = csv.writer(f)
     csv_writer.writerows(daily_temps)
 
@@ -805,17 +845,214 @@ with open(daily_temps_csv2,"r") as f:
     content = f.readlines()
     print(content)
 
+with open(daily_temps_csv2,"r") as f:
+
+    # read() will read byte by byte till the end.
+    content = f.read()
+    print("content of daily_temps_csv2 using read() is:")
+    sysout(content)
+    for element in content:
+        sysout(element)
+
+    # reset cursor to the beginning of the file.
+    f.seek(0) 
+
+    # readlines() will read line by line till the end
+    content = f.readlines()
+    print("content of daily_temps_csv2 using readlines() is")
+    sysout(content)
+    for element in content:
+        sysout(element)
+    
+
+print("daily_temps_csv3================================")
+
+daily_temps_csv3 = csv_12/"daily_temps3.csv"
+
+with open(daily_temps_csv3,"w",newline='') as f:
+    csv_writer = csv.writer(f)   
+    csv_writer.writerows(daily_temps)
+
+read_daily_temps_csv3 = []
+with open(daily_temps_csv3,"r") as f:
+    content = f.readlines()
+    sysout(content)
+
 print(f"""{seg}
 The csv Module
 2. Reading CSV Files With csv.reader
+step 1 - open the file you want to read as a file object
+step 2 - create a csv.reader object by passing the file object as parameter
+step 3 - csv.reader object is iterable, so it can be iterated over.
+         Notice csv.reader stores everything as a list of strings.
+         you may need to convert it back to its original data type.
+
+Notice if you want to use the standard tool for reading csv, you may encounter
+line feed cannot be parsed.
 {seg}
 """)
 
+print("daily_temps_csv3================================")
+read_daily_temps_csv3 = []
+with open(daily_temps_csv3,"r") as f:
+    csv_reader_content = csv.reader(f)
+    sysout(csv_reader_content)
+    for row in csv_reader_content:
+        sysout(row)
+        int_row = [int(value) for value in row]
+        read_daily_temps_csv3.append(int_row)
+    
+sysout(read_daily_temps_csv3)
+
+print("daily_temps_csv2================================")
+
+daily_temps_csv2_fileObj = open(daily_temps_csv2)
+
+print("file object")
+daily_temps_csv2_fileObj_content = daily_temps_csv2_fileObj.readlines()
+sysout(daily_temps_csv2_fileObj_content)
+for row in daily_temps_csv2_fileObj_content:
+    sysout(row)
+    
+
+
+print("csv.reader object")
+daily_temps_csv2_fileObj.seek(0)
+daily_temps_csv2_readerObj_content = csv.reader(daily_temps_csv2_fileObj)
+sysout(daily_temps_csv2_readerObj_content)
+for row in daily_temps_csv2_readerObj_content:
+    sysout(row)
+
+daily_temps_csv2_fileObj.close()
+print(f"""{seg}
+The csv Module
+3. Reading and Writing CSV Files With Headers
+
+1- read a csv using csv.DictReader()
+
+step 1. open a csv file as a file object
+step 2. create a csv.DictReader object by passing the object file as argument
+step 3. iterative the csv.DictReader object.
+{seg}
+""")
+
+csv_with_header_employee = Path(Path.cwd()/"chapter12_Exercise"/"csv_12"/"employees.csv")
+file = open(csv_with_header_employee,"w", newline = '', encoding = "utf8")
+csv_writer_employees = csv.writer(file)
+content = [["name","department","salary"],
+["Lee","Operations",75000.00],
+["Jane","Engineering",85000.00],
+["Diego","Sales",80000.00]]
+csv_writer_employees.writerows(content)
+
+file.close()
+
+with open(csv_with_header_employee) as f:
+    csv_dict_reader = csv.DictReader(f)
+    for element in csv_dict_reader:
+        sysout(element)
+
+print("""Notice the salary is also saved as strings.
+when read in a csv file,
+you may want to convert elements to their actual data type.""")
+
+def _convert(dict):
+    dict['salary'] = float(dict['salary'])
+    return dict
+
+with open(csv_with_header_employee) as f:
+    csv_dict_reader = csv.DictReader(f)
+    for element in csv_dict_reader:
+        _convert(element)
+        sysout(element)
 
 print(f"""{seg}
 The csv Module
-1. Writing CSV Files With csv.writer
-2. Reading CSV Files With csv.reader
-3.
+3. Reading and Writing CSV Files With Headers
+
+2- write a csv using csv.DictWriter()
+step 1. create a Path object of the file
+step 2. open the path object as f using mode as "w"
+step 3. create a csv.DictWriter object by passing the object file
+        and the list of header as fieldnames
+step 4. call writeheader() of the csv.DictWriter object to write the headers
+step 5. call writerows() of the csv.DictWriter object by passing the content
+        to write the content in the csv file.
 {seg}
 """)
+people = [{"name": "Veronica", "age": 29},
+          {"name": "Audrey", "age": 32},
+          {"name": "Sam", "age": 24}, ]
+
+csv_with_header_people = Path(Path.cwd()/"chapter12_Exercise"/"csv_12"/"people.csv")
+
+with open(csv_with_header_people,"w") as f:
+    csv_dict_writerObj = csv.DictWriter(f,fieldnames=["name","age"])
+    csv_dict_writerObj.writeheader()
+    csv_dict_writerObj.writerows(people)
+
+with open(csv_with_header_people) as f:
+    csv_dict_readerObj = csv.DictReader(f)
+    for element in csv_dict_readerObj:
+        print(element)
+
+
+print(f"""{seg}
+Review Exercise
+{seg}""")
+
+print("Review Exercise 1=========")
+
+numbers = [
+[1, 2, 3, 4, 5],
+[6, 7, 8, 9, 10],
+[11, 12, 13, 14, 15],
+]
+
+numbers_csv = Path(Path.cwd()/"chapter12_Exercise"/"ReviewExercise"/"chapter12_reviewExercise"/"numbers.csv")
+
+with open(numbers_csv,"w",newline='') as f:
+    csv_writer = csv.writer(f)
+    csv_writer.writerows(numbers)
+
+with open(numbers_csv) as f:
+    csv_reader = csv.reader(f)
+    for e in csv_reader:
+        sysout(e)
+
+print("Review Exercise 2=========")
+
+revEx2_list = []
+with open(numbers_csv) as f:
+    csv_reader = csv.reader(f)
+    for row in csv_reader:
+        revEx2_list.append(row)
+
+sysout(revEx2_list)
+
+print("Review Exercise 3=========")
+favorite_colors = [
+{"name": "Joe", "favorite_color": "blue"},
+{"name": "Anne", "favorite_color": "green"},
+{"name": "Bailey", "favorite_color": "red"},
+]
+
+favorite_colors_csv = Path(Path.cwd()/"chapter12_Exercise"/"ReviewExercise"/"chapter12_reviewExercise"/"favorite_colors.csv")
+
+with open(favorite_colors_csv,"w",newline='') as f:
+    csv_dict_writerObj = csv.DictWriter(f,fieldnames=["name","favorite_color"])
+    csv_dict_writerObj.writeheader()
+    csv_dict_writerObj.writerows(favorite_colors)
+
+print("Review Exercise 4=========")
+
+favorite_colors_list = []
+with open(favorite_colors_csv) as f:
+    csv_dict_readerObj = csv.DictReader(f)
+    for e in csv_dict_readerObj:
+        favorite_colors_list.append(e)
+
+sysout(favorite_colors_list)
+
+    
+
