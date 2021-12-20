@@ -150,6 +150,9 @@ with pdf_file.open(mode="rb") as file:
 print(f"""
 {seg}
 Extract Text From a Page
+step 1. open a file with mode as "rb"
+step 2. create a PdfFileReader object pdf_reader by pass the file as argument
+
 {seg}
 """)
 
@@ -185,3 +188,31 @@ with pdf_file.open(mode="rb") as file:
         #print(type(page.extractText()))
         cnt_of_pages +=1
 print(cnt_of_pages)
+
+
+print(f"""
+{sec}
+Putting It All Together
+{sec}
+""")
+
+txt_file = Path(Path.cwd()/"chapter14_Exercise"/"Pride_and_Prejudice.txt")
+
+print("""Notice, if pass pdf_file Path object directly to PdfFileReader,
+you need to cast the Path object to string first.
+this can be avoid using with open rb, see my example from above.
+""")
+pdf_reader = PdfFileReader(str(pdf_file))
+
+with txt_file.open("w",newline='') as output:
+    output.write(f"{pdf_reader.documentInfo.title}\n"
+    f"Number of pages: {pdf_reader.getNumPages()}\n\n")
+    for page in pdf_reader.pages:
+        text = page.extractText()
+        output.write(text)
+        
+print(f"""
+{seg}
+14.2 Extract Pages From a PDF
+{seg}
+""")
